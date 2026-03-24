@@ -26,51 +26,60 @@ echo "Opcion 6: Salir"
 
 read -p "Ingrese el número de la opción elegida: " opcion_elegida
 
-while [ $opcion_elegida -ne 6 ]; do
+while [ "$opcion_elegida" -ne 6 ]; do
     case $opcion_elegida in
         1)
             echo "Creando entorno dentro de $HOME..."
             
-            # Utilizamos el flag '-p' para crear directorios en una línea
-            mkdir -p $DIRECTORIO_ENTRADA $DIRECTORIO_PROCESADO $DIRECTORIO_SALIDA
+            mkdir -p "$DIRECTORIO_ENTRADA" "$DIRECTORIO_PROCESADO" "$DIRECTORIO_SALIDA"
             
             cp "./consolidar.sh" "$HOME/EPNro1/consolidar.sh"
 
-            # Creamos el archivo de salida en el proceso de creación de entorno
             if [ -z "$FILENAME" ]; then
                 echo "La variable FILENAME no está definida. Usando nombre por defecto..."
                 export FILENAME="consolidado_defecto"
             fi
+
             touch "$DIRECTORIO_SALIDA$FILENAME.txt"
 
             echo "Directorios y archivo de salida $FILENAME.txt creados"
             ;;
         2)
-            # 1. Verificamos si los directorios NO existen
-            if [[ -d "$DIRECTORIO_ENTRADA" || -d "$DIRECTORIO_SALIDA" || -d "$DIRECTORIO_PROCESADO" ]]; then
+            if [[ -d "$DIRECTORIO_ENTRADA" && -d "$DIRECTORIO_SALIDA" && -d "$DIRECTORIO_PROCESADO" ]]; then
                 echo "Corriendo procesamiento en background..."
-                bash $HOME/EPNro1/consolidar.sh &
+                bash "$HOME/EPNro1/consolidar.sh" &
             else
                 echo "No se encuentran los directorios para ejecutar este proceso. Por favor, elegir la opción 1."
             fi
             ;;
         3)  
-            if [ -f "$FILENAME" ]; then
+            if [ -f "$DIRECTORIO_SALIDA$FILENAME.txt" ]; then
                 echo "Archivo ordenado por número de padrón"
-                sort -n -k1,1 < "$FILENAME" 
+                sort -n -k1,1 "$DIRECTORIO_SALIDA$FILENAME.txt"
             else
-                echo "Error: El archivo $FILENAME no existe."
+                echo "Error: El archivo no existe."
             fi
             ;;
         4)
-            echo "Opción 4 - pendiente"
+            if [ -f "$DIRECTORIO_SALIDA$FILENAME.txt" ]; then
+                echo "Las 10 notas más altas:"
+                sort -nr -k2,2 "$DIRECTORIO_SALIDA$FILENAME.txt" | head -10
+            else
+                echo "Error: El archivo no existe."
+            fi
             ;;
         5)
-            echo "Opción 5 - pendiente"
+            read -p "Ingrese el padrón del alumno: " padron
+            if [ -f "$DIRECTORIO_SALIDA$FILENAME.txt" ]; then
+                grep "^$padron" "$DIRECTORIO_SALIDA$FILENAME.txt"
+            else
+                echo "Error: El archivo no existe."
+            fi
             ;;
         6)
             echo "Saliendo..."
             break
+            ;;
     esac
     read -p "Ingrese el número de otra opción elegida: " opcion_elegida
 done
