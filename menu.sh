@@ -1,9 +1,11 @@
 #!/bin/bash
 
+export DIRECTORIO_HOME="$HOME/EPNro1"
 # En caso de que se especifique parámetro '-d', cierra procesos en background y limpia las variables de entorno creadas
 if [ "$1" == "-d" ]; then # Las comillas son importantes para que no tire error en caso de que no se especifique el parámetro
     echo "Finalizando proceso 'consolidar.sh'..."
     pkill -f consolidar.sh
+    echo "Limpiando directorio $DIRECTORIO_HOME..."
     rm -rf "$DIRECTORIO_HOME"
     echo "Limpiando variables en memoria..."
     unset FILENAME DIRECTORIO_ENTRADA DIRECTORIO_SALIDA DIRECTORIO_PROCESADO
@@ -12,7 +14,6 @@ fi
 
 # Creo las variables de los directorios para mayor claridad en las rutas
 # A su vez, exporto las variables para emplearlas dentro de consolidar.sh 
-export DIRECTORIO_HOME="$HOME/EPNro1"
 export DIRECTORIO_ENTRADA="$HOME/EPNro1/entrada/"
 export DIRECTORIO_SALIDA="$HOME/EPNro1/salida/"
 export DIRECTORIO_PROCESADO="$HOME/EPNro1/procesado/"
