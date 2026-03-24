@@ -4,7 +4,7 @@
 if [ "$1" == "-d" ]; then # Las comillas son importantes para que no tire error en caso de que no se especifique el parámetro
     echo "Finalizando proceso 'consolidar.sh'..."
     pkill -f consolidar.sh
-    
+    rm -rf "$DIRECTORIO_HOME"
     echo "Limpiando variables en memoria..."
     unset FILENAME DIRECTORIO_ENTRADA DIRECTORIO_SALIDA DIRECTORIO_PROCESADO
     exit 0
@@ -12,6 +12,7 @@ fi
 
 # Creo las variables de los directorios para mayor claridad en las rutas
 # A su vez, exporto las variables para emplearlas dentro de consolidar.sh 
+export DIRECTORIO_HOME="$HOME/EPNro1"
 export DIRECTORIO_ENTRADA="$HOME/EPNro1/entrada/"
 export DIRECTORIO_SALIDA="$HOME/EPNro1/salida/"
 export DIRECTORIO_PROCESADO="$HOME/EPNro1/procesado/"
@@ -47,7 +48,7 @@ while [ $opcion_elegida -ne 6 ]; do
             ;;
         2)
             # 1. Verificamos si los directorios NO existen
-            if [[ -d "$DIRECTORIO_ENTRADA" || -d "$DIRECTORIO_SALIDA" || -d "$DIRECTORIO_PROCESADO" ]]; then
+            if [[ -d "$DIRECTORIO_ENTRADA" && -d "$DIRECTORIO_SALIDA" && -d "$DIRECTORIO_PROCESADO" ]]; then
                 echo "Corriendo procesamiento en background..."
                 bash $HOME/EPNro1/consolidar.sh &
             else
@@ -63,10 +64,28 @@ while [ $opcion_elegida -ne 6 ]; do
             fi
             ;;
         4)
-            echo "Opción 4 - pendiente"
+            #Muestra las 10 mejores notas con el -k4 le decimos que busque en la columna numero 4,
+            #el -n es para valores numericos y el -r es para que ordene de mayor a menor luego,
+            #usamos un pipeline para decirle que se detenga luego de las primeras 10 lineas
+            if [ -f "$FILENAME" ]; then
+                sort -k4 -n -r "$FILENAME" | head -10
+            else 
+                 echo "Error: El archivo $FILENAME no existe."
+            fi
             ;;
         5)
-            echo "Opción 5 - pendiente"
+            echo -n "Ingresá el número de padrón: "
+            read padron
+            if [ -f "$FILENAME" ]; then
+                resultado=$(grep "^$padron " "$FILENAME")
+                if [ -z "$resultado" ]; then
+                    echo "No se encontró el padrón $padron."
+                else
+                    echo "$resultado"
+                fi
+            else
+                echo "No existe el archivo $FILENAME"
+            fi
             ;;
         6)
             echo "Saliendo..."
