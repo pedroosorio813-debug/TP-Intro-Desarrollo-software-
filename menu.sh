@@ -1,40 +1,79 @@
 #!/bin/bash
 
-HOME_DIRECTORIO="$HOME/EPNro1"
-ENTRADA_DIR="entrada"
-SALIDA_DIR="salida"
-PROCESADO_DIR="procesado"
+HOME_DIR="$HOME/EPNro1"
 
-echo "Hola, te damos la bienvenida al Ejercicio Practico de Bash\nTe presentamos nuestro menu de opciones:"
-echo "Opcion 1: Crear Entorno"
-echo "Opcion 2: Correr Proceso"
-echo "Opcion 3: Listar alumnos ordenados por numero de padron"
-echo "Opcion 4: Mostrar las 10 notas mas altas"
-echo "Opcion 5: Datos de alumno especifico"
-echo "Opcion 6: Salir"
+while true
+do
+  echo "Hola te damos la bienvenida al ejercicio practico de bash/nTe presentamos nuestro menu de opciones"
+  echo "1) Crear entorno"
+  echo "2) Correr proceso"
+  echo "3) Listar alumnos por numero de padron"
+  echo "4) Top 10 notas mas altas"
+  echo "5) Buscar datos del alumno"
+  echo "6) Salir"
 
-read -p "Ingrese el numero de la opcion elegida: " opcion_elegida
+  read opcion
 
+  case $opcion in
 
-case $opcion_elegida in
-    1)
-        echo "Creando entorno dentro del Home"
-        mkdir -p "$HOME_DIRECTORIO"/{$ENTRADA_DIR,$SALIDA_DIR,$PROCESADO_DIR}
-        echo "Entorno creado";;
-    2)
-        echo "Opción 2 - pendiente"
-        ;;
-    3)
-        echo "Opción 3 - pendiente"
-        ;;
-    4)
-        echo "Opción 4 - pendiente"
-        ;;
-    5)
-        echo "Opción 5 - pendiente"
-        ;;
-    6)
-        echo "Saliendo..."
-        exit 0
-        ;;
-esac
+  1)
+    mkdir -p "$HOME_DIR/entrada"
+    mkdir -p "$HOME_DIR/salida"
+    mkdir -p "$HOME_DIR/procesado"
+    echo "Entorno creado"
+  ;;
+
+  2)
+    if [ -z "$FILENAME" ]; then
+      echo "Error: definir FILENAME"
+      echo "Ej: export FILENAME=alumnos"
+    else
+      sh consolidar.sh &
+      echo "Proceso corriendo en background"
+    fi
+  ;;
+
+  3)
+    ARCHIVO="$HOME_DIR/salida/$FILENAME.txt"
+
+    if [ ! -f "$ARCHIVO" ]; then
+      echo "No existe archivo"
+    else
+      sort -n "$ARCHIVO"
+    fi
+  ;;
+
+  4)
+    ARCHIVO="$HOME_DIR/salida/$FILENAME.txt"
+
+    if [ ! -f "$ARCHIVO" ]; then
+      echo "No existe archivo"
+    else
+      sort -k4 -nr "$ARCHIVO" | head -10
+    fi
+  ;;
+
+  5)
+    ARCHIVO="$HOME_DIR/salida/$FILENAME.txt"
+
+    if [ ! -f "$ARCHIVO" ]; then
+      echo "No existe archivo"
+    else
+      echo "Ingrese padron:"
+      read padron
+      grep "^$padron " "$ARCHIVO"
+    fi
+  ;;
+
+  6)
+    echo "Fin del programa"
+    exit 0
+  ;;
+
+  *)
+    echo "Opcion invalida"
+  ;;
+
+  esac
+
+done
