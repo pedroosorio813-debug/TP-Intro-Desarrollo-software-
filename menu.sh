@@ -72,10 +72,9 @@ while [ $opcion_elegida -ne 6 ]; do
             fi
             ;;
         4)
-            #Muestra las 10 mejores notas con el -k4 le decimos que busque en la columna numero 4,
+            #Muestra las 10 mejores notas con el -k5 le decimos que busque en la columna numero 5,
             #el -n es para valores numericos y el -r es para que ordene de mayor a menor luego,
             #usamos un pipeline para decirle que se detenga luego de las primeras 10 lineas
-            # Para que esto funcione, es necesario que contenga un apellido y un nombre
             if [ -f "$ARCHIVO_SALIDA" ]; then
                 sort -k5nr "$ARCHIVO_SALIDA" | head -10
             else 
