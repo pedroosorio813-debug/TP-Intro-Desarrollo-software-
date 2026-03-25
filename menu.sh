@@ -2,13 +2,14 @@
 
 export DIRECTORIO_HOME="$HOME/EPNro1"
 # En caso de que se especifique parámetro '-d', cierra procesos en background y limpia las variables de entorno creadas
+# Además, en caso de que no haya tales directorios, procesos o variables, no tira error
 if [ "$1" == "-d" ]; then # Las comillas son importantes para que no tire error en caso de que no se especifique el parámetro
     echo "Finalizando proceso 'consolidar.sh'..."
     pkill -f consolidar.sh
     echo "Limpiando directorio $DIRECTORIO_HOME..."
     rm -rf "$DIRECTORIO_HOME"
     echo "Limpiando variables en memoria..."
-    unset FILENAME DIRECTORIO_ENTRADA DIRECTORIO_SALIDA DIRECTORIO_PROCESADO
+    unset FILENAME DIRECTORIO_ENTRADA DIRECTORIO_SALIDA DIRECTORIO_PROCESADO DIRECTORIO_HOME
     exit 0
 fi
 
@@ -17,6 +18,7 @@ fi
 export DIRECTORIO_ENTRADA="$HOME/EPNro1/entrada/"
 export DIRECTORIO_SALIDA="$HOME/EPNro1/salida/"
 export DIRECTORIO_PROCESADO="$HOME/EPNro1/procesado/"
+export ARCHIVO_SALIDA="$DIRECTORIO_SALIDA$FILENAME.txt"
 
 echo -e "Hola! Te damos la bienvenida al Ejercicio Práctico de Bash\nTe presentamos nuestro menú de opciones:"
 echo "Opcion 1: Crear Entorno"
@@ -43,54 +45,63 @@ while [ $opcion_elegida -ne 6 ]; do
                 echo "La variable FILENAME no está definida. Usando nombre por defecto..."
                 export FILENAME="consolidado_defecto"
             fi
-            touch "$DIRECTORIO_SALIDA$FILENAME.txt"
+            touch "$ARCHIVO_SALIDA"
 
             echo "Directorios y archivo de salida $FILENAME.txt creados"
             ;;
         2)
             # 1. Verificamos si los directorios NO existen
             if [[ -d "$DIRECTORIO_ENTRADA" && -d "$DIRECTORIO_SALIDA" && -d "$DIRECTORIO_PROCESADO" ]]; then
-                echo "Corriendo procesamiento en background..."
-                bash $HOME/EPNro1/consolidar.sh &
+                # Si el proceso ya está corriendo, no se ejecuta de nuevo
+                if pgrep -f "consolidar.sh" > /dev/null; then
+                    echo "El proceso ya se encuentra corriendo."
+                else
+                    bash "$HOME/EPNro1/consolidar.sh" &
+                    echo "Proceso iniciado correctamente."
+                fi
             else
                 echo "No se encuentran los directorios para ejecutar este proceso. Por favor, elegir la opción 1."
             fi
             ;;
         3)  
-            if [ -f "$FILENAME" ]; then
+            if [ -f "$ARCHIVO_SALIDA" ]; then
                 echo "Archivo ordenado por número de padrón"
-                sort -n -k1,1 < "$FILENAME" 
+                sort -n -k1,1 < "$ARCHIVO_SALIDA" 
             else
-                echo "Error: El archivo $FILENAME no existe."
+                echo "Error: El archivo $ARCHIVO_SALIDA no existe."
             fi
             ;;
         4)
             #Muestra las 10 mejores notas con el -k4 le decimos que busque en la columna numero 4,
             #el -n es para valores numericos y el -r es para que ordene de mayor a menor luego,
             #usamos un pipeline para decirle que se detenga luego de las primeras 10 lineas
-            if [ -f "$FILENAME" ]; then
-                sort -k4 -n -r "$FILENAME" | head -10
+            # Para que esto funcione, es necesario que contenga un apellido y un nombre
+            if [ -f "$ARCHIVO_SALIDA" ]; then
+                sort -k5nr "$ARCHIVO_SALIDA" | head -10
             else 
-                 echo "Error: El archivo $FILENAME no existe."
+                 echo "Error: El archivo $ARCHIVO_SALIDA no existe."
             fi
             ;;
         5)
             echo -n "Ingresá el número de padrón: "
             read padron
-            if [ -f "$FILENAME" ]; then
-                resultado=$(grep "^$padron " "$FILENAME")
+            if [ -f "$ARCHIVO_SALIDA" ]; then
+                resultado=$(grep "^$padron " "$ARCHIVO_SALIDA")
                 if [ -z "$resultado" ]; then
                     echo "No se encontró el padrón $padron."
                 else
                     echo "$resultado"
                 fi
             else
-                echo "No existe el archivo $FILENAME"
+                echo "No existe el archivo $ARCHIVO_SALIDA"
             fi
             ;;
         6)
             echo "Saliendo..."
             break
+            ;;
+        *)
+            echo "Error: '$opcion_elegida' no es una alternativa válida."
     esac
     read -p "Ingrese el número de otra opción elegida: " opcion_elegida
 done
